@@ -1,441 +1,1105 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
 
-const services = [
+import { useState } from "react";
+
+type ServiceStatus = "active" | "limited" | "inactive";
+
+type Service = {
+
+  name: string;
+
+  icon: string;
+
+  description: string;
+
+  status: ServiceStatus;
+
+  statusText: string;
+
+  statusDetail: string;
+
+};
+
+const serviceAreas = [
+
+  "North Everett",
+
+  "Marysville",
+
+  "Lake Stevens",
+
+  "Smokey Point",
+
+  "Mukilteo",
+
+];
+
+const services: Service[] = [
+
   {
+
     name: "Junk Removal",
+
+    icon: "🗑️",
+
     description:
-      "Fast local haul-away for furniture, appliances, garage cleanouts, yard debris, and general junk pickup.",
-    includes: [
-      "Furniture removal",
-      "Mattress pickup",
-      "Appliance haul-away",
-      "Garage cleanouts",
-      "Yard debris removal",
-      "Hot tub removal",
-    ],
-    areas: ["Everett", "Marysville", "Lake Stevens", "Arlington", "Mukilteo"],
-    pricing: ["Single item from $95", "Small load from $165", "Full load pricing available"],
-    cta: "Request Junk Removal",
+
+      "Furniture, appliances, garage cleanouts, unwanted items, and general junk haul-away.",
+
+    status: "active",
+
+    statusText: "ACTIVE NOW",
+
+    statusDetail: "Crews available",
+
   },
+
   {
-    name: "House Cleaning",
-    description:
-      "Reliable local cleaning for homes, apartments, move-outs, recurring cleans, and deep refreshes.",
-    includes: [
-      "Standard house cleaning",
-      "Deep cleaning",
-      "Move-in cleaning",
-      "Move-out cleaning",
-      "Apartment cleaning",
-      "Kitchen and bathroom focus",
-    ],
-    areas: ["Everett", "Marysville", "Lynnwood", "Mukilteo", "Lake Stevens"],
-    pricing: ["Basic clean from $120", "Deep clean from $220", "Custom quotes available"],
-    cta: "Request House Cleaning",
-  },
-  {
-    name: "Pressure Washing",
-    description:
-      "Exterior cleaning for driveways, siding, patios, fences, walkways, and entry areas.",
-    includes: [
-      "Driveway washing",
-      "Patio cleaning",
-      "Siding wash",
-      "Fence washing",
-      "Walkway cleaning",
-      "Deck rinse-down",
-    ],
-    areas: ["Everett", "Mukilteo", "Marysville", "Lake Stevens", "Snohomish"],
-    pricing: ["Driveways from $150", "Siding from $225", "Bundle pricing available"],
-    cta: "Request Pressure Washing",
-  },
-  {
+
     name: "Moving Help",
+
+    icon: "🚚",
+
     description:
-      "Local labor help for loading, unloading, lifting, rearranging furniture, and small moves.",
-    includes: [
-      "Loading trucks",
-      "Unloading trucks",
-      "Furniture moving",
-      "Apartment moves",
-      "In-home rearranging",
-      "Heavy item help",
-    ],
-    areas: ["Everett", "Marysville", "Lake Stevens", "Lynnwood", "Arlington"],
-    pricing: ["2-hour help from $140", "Heavy item moves quoted", "Small move support available"],
-    cta: "Request Moving Help",
+
+      "Loading, unloading, furniture moving, heavy-item help, and small local moves.",
+
+    status: "limited",
+
+    statusText: "LIMITED AVAILABILITY",
+
+    statusDetail: "Few openings remaining",
+
   },
+
   {
-    name: "Yard Cleanup",
+
+    name: "Yard Cleanup & Hauling",
+
+    icon: "🌿",
+
     description:
-      "Seasonal and one-time outdoor cleanup for leaves, branches, overgrowth, and debris removal.",
-    includes: [
-      "Leaf cleanup",
-      "Branch pickup",
-      "Weed and overgrowth cleanup",
-      "Storm debris cleanup",
-      "General yard cleanup",
-      "Bagged waste haul-away",
-    ],
-    areas: ["Everett", "Lake Stevens", "Marysville", "Arlington", "Snohomish"],
-    pricing: ["Cleanup visits from $110", "Larger yards custom quoted", "Debris haul-away available"],
-    cta: "Request Yard Cleanup",
+
+      "Branches, leaves, brush, storm debris, outdoor cleanup, and haul-away.",
+
+    status: "inactive",
+
+    statusText: "NOT ACTIVE",
+
+    statusDetail: "No crews currently running",
+
   },
+
   {
-    name: "Handyman",
+
+    name: "Pickup & Delivery",
+
+    icon: "📦",
+
     description:
-      "General help for small household fixes, light installs, assembly, and property touch-ups.",
-    includes: [
-      "Furniture assembly",
-      "TV mounting",
-      "Light fixture swaps",
-      "Shelf installs",
-      "Minor repairs",
-      "Punch-list tasks",
-    ],
-    areas: ["Everett", "Marysville", "Lynnwood", "Mukilteo", "Lake Stevens"],
-    pricing: ["Small jobs from $95", "Hourly options available", "Multi-task visits available"],
-    cta: "Request Handyman Help",
+
+      "Furniture, appliances, Marketplace purchases, and other bulky-item delivery.",
+
+    status: "active",
+
+    statusText: "ACTIVE NOW",
+
+    statusDetail: "Crews available",
+
   },
-  {
-    name: "Painting",
-    description:
-      "Interior and exterior painting support for touch-ups, walls, trim, fences, and small projects.",
-    includes: [
-      "Interior walls",
-      "Trim painting",
-      "Touch-ups",
-      "Fence painting",
-      "Small room repaints",
-      "Prep and masking",
-    ],
-    areas: ["Everett", "Marysville", "Lake Stevens", "Mukilteo", "Snohomish"],
-    pricing: ["Touch-ups from $125", "Room painting quoted", "Exterior estimates available"],
-    cta: "Request Painting",
-  },
-  {
-    name: "Gutter Cleaning",
-    description:
-      "Safe local gutter cleanout for homes needing debris removal, flow checks, and seasonal maintenance.",
-    includes: [
-      "Gutter debris removal",
-      "Downspout clearing",
-      "Seasonal cleanouts",
-      "Roof edge cleanup",
-      "Basic flow check",
-      "Before/after photos",
-    ],
-    areas: ["Everett", "Mukilteo", "Marysville", "Lake Stevens", "Lynnwood"],
-    pricing: ["Single-story from $135", "Multi-story quoted", "Seasonal service available"],
-    cta: "Request Gutter Cleaning",
-  },
-  {
-    name: "Pest Control",
-    description:
-      "Local pest support for general treatment plans, inspections, and recurring service options.",
-    includes: [
-      "General pest treatment",
-      "Exterior barrier service",
-      "Rodent inspection",
-      "Spider treatment",
-      "Ant treatment",
-      "Recurring service plans",
-    ],
-    areas: ["Everett", "Marysville", "Lake Stevens", "Lynnwood", "Mukilteo"],
-    pricing: ["Initial visits from $139", "Recurring plans available", "Inspection pricing varies"],
-    cta: "Request Pest Control",
-  },
+
 ];
 
-const pros = [
-  {
-    name: "Everett Junk Pros",
-    service: "Junk Removal",
-    rating: "4.9",
-    jobs: "240+ jobs",
-    area: "Everett • 4 mi away",
-    price: "From $95",
-  },
-  {
-    name: "North Sound Clean Co.",
-    service: "House Cleaning",
-    rating: "4.8",
-    jobs: "180+ jobs",
-    area: "Marysville • 6 mi away",
-    price: "From $120",
-  },
-  {
-    name: "Cascade Wash & Restore",
-    service: "Pressure Washing",
-    rating: "4.9",
-    jobs: "130+ jobs",
-    area: "Mukilteo • 9 mi away",
-    price: "From $150",
-  },
-  {
-    name: "Sound Move Assist",
-    service: "Moving Help",
-    rating: "4.7",
-    jobs: "110+ jobs",
-    area: "Everett • 5 mi away",
-    price: "From $140",
-  },
-  {
-    name: "Lake Stevens Yard Crew",
-    service: "Yard Cleanup",
-    rating: "4.7",
-    jobs: "95+ jobs",
-    area: "Lake Stevens • 8 mi away",
-    price: "From $110",
-  },
-  {
-    name: "Evergreen Fix-It",
-    service: "Handyman",
-    rating: "4.8",
-    jobs: "150+ jobs",
-    area: "Lynnwood • 10 mi away",
-    price: "From $95",
-  },
-  {
-    name: "Northwest Paint Detail",
-    service: "Painting",
-    rating: "4.8",
-    jobs: "120+ jobs",
-    area: "Snohomish • 11 mi away",
-    price: "From $125",
-  },
-  {
-    name: "Rainline Gutter Co.",
-    service: "Gutter Cleaning",
-    rating: "4.9",
-    jobs: "140+ jobs",
-    area: "Mukilteo • 7 mi away",
-    price: "From $135",
-  },
-  {
-    name: "Cascade Pest Defense",
-    service: "Pest Control",
-    rating: "4.8",
-    jobs: "170+ jobs",
-    area: "Everett • 3 mi away",
-    price: "From $139",
-  },
-];
+function getStatusClasses(status: ServiceStatus) {
+
+  if (status === "active") {
+
+    return {
+
+      dot: "bg-green-400",
+
+      text: "text-green-400",
+
+    };
+
+  }
+
+  if (status === "limited") {
+
+    return {
+
+      dot: "bg-amber-400",
+
+      text: "text-amber-400",
+
+    };
+
+  }
+
+  return {
+
+    dot: "bg-white/45",
+
+    text: "text-white/60",
+
+  };
+
+}
 
 export default function ExplorePage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Junk Removal");
 
-  const filteredServices = useMemo(() => {
-    return services.filter((service) =>
-      service.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  const activeService =
-    services.find((service) => service.name === selectedCategory) ?? services[0];
+  function chooseService(service: Service) {
 
-  const filteredPros = pros.filter((pro) => {
-    const matchesCategory = pro.service === activeService.name;
-    const matchesSearch =
-      pro.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pro.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pro.area.toLowerCase().includes(searchTerm.toLowerCase());
+    setSelectedService(service);
 
-    if (!searchTerm.trim()) return matchesCategory;
-    return matchesCategory && matchesSearch;
-  });
+    setTimeout(() => {
+
+      document.getElementById("request")?.scrollIntoView({
+
+        behavior: "smooth",
+
+        block: "start",
+
+      });
+
+    }, 100);
+
+  }
 
   return (
+
     <main
+
       className="min-h-screen text-white"
+
       style={{
+
         backgroundImage:
-          "linear-gradient(rgba(4, 12, 9, 0.86), rgba(4, 12, 9, 0.95)), url('/images/explore-bg.jpg')",
+
+          "linear-gradient(rgba(3, 12, 8, 0.68), rgba(3, 12, 8, 0.93)), url('/images/explore-bg.jpg')",
+
         backgroundSize: "cover",
+
         backgroundPosition: "center",
+
         backgroundAttachment: "fixed",
+
       }}
+
     >
-      <div className="min-h-screen px-6 py-8 md:px-10">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 max-w-xl">
-          Explore Local Services
-        </h1>
 
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search for a service..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-4 rounded-2xl bg-[#122820]/90 border border-[#2b5747] text-white placeholder:text-white/55 outline-none"
-          />
-        </div>
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#06100c]/80 backdrop-blur-xl">
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-10">
-          {filteredServices.map((service) => {
-            const isActive = selectedCategory === service.name;
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
 
-            return (
-              <button
-                key={service.name}
-                type="button"
-                onClick={() => setSelectedCategory(service.name)}
-                className={`p-4 rounded-2xl text-center transition border ${
-                  isActive
-                    ? "bg-[#214b3d] border-[#67b38f] shadow-[0_0_0_1px_rgba(103,179,143,0.35)]"
-                    : "bg-[#122820]/90 border-[#1f3d32] hover:bg-[#173328]"
-                }`}
-              >
-                <span className="text-base md:text-lg font-medium">{service.name}</span>
-              </button>
-            );
-          })}
-        </div>
+          <Link
 
-        <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-6 mb-10">
-          <section className="bg-[#0f211b]/88 border border-[#234336] rounded-3xl p-6 md:p-8 backdrop-blur-sm">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-white/55 mb-2">
-                  Selected Service
-                </p>
-                <h2 className="text-3xl font-bold">{activeService.name}</h2>
-              </div>
+            href="/"
 
-              <span className="text-xs md:text-sm px-3 py-2 rounded-full bg-[#173328] border border-[#2c5647] text-white/80">
-                Everett Area
-              </span>
-            </div>
+            className="text-3xl font-extrabold tracking-tight text-white"
 
-            <p className="text-white/75 leading-7 mb-6">
-              {activeService.description}
-            </p>
+          >
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">What’s Included</h3>
-                <ul className="space-y-2 text-white/78">
-                  {activeService.includes.map((item) => (
-                    <li key={item}>• {item}</li>
-                  ))}
-                </ul>
-              </div>
+            Relay
 
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Service Areas</h3>
-                <ul className="space-y-2 text-white/78 mb-6">
-                  {activeService.areas.map((area) => (
-                    <li key={area}>• {area}</li>
-                  ))}
-                </ul>
+          </Link>
 
-                <h3 className="text-lg font-semibold mb-3">Starting Pricing</h3>
-                <ul className="space-y-2 text-white/78">
-                  {activeService.pricing.map((price) => (
-                    <li key={price}>• {price}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button className="px-5 py-3 rounded-xl bg-[#214b3d] hover:bg-[#295745] transition font-semibold">
-                {activeService.cta}
-              </button>
-              <button className="px-5 py-3 rounded-xl bg-transparent border border-[#325b4c] hover:bg-[#173328] transition">
-                View Local Pros
-              </button>
-            </div>
-          </section>
+            <span className="hidden text-sm text-white/75 sm:block">
 
-          <aside className="bg-[#0f211b]/88 border border-[#234336] rounded-3xl p-6 backdrop-blur-sm flex flex-col justify-between min-h-[280px]">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-white/55 mb-2">
-                Map Preview
-              </p>
-              <h3 className="text-2xl font-bold mb-3">Everett Area Map</h3>
-              <p className="text-white/72 leading-7">
-                Live map pins, zip-based discovery, and nearby pro matching can go here next.
-                For now, this panel keeps the Explore layout filled while the service browser works.
-              </p>
-            </div>
+              📍 North Everett, WA
 
-            <div className="mt-6 rounded-2xl border border-dashed border-[#315847] bg-[#122820]/70 min-h-[180px] flex items-center justify-center text-white/55 text-center px-6">
-              Interactive Map Coming Soon
-            </div>
-          </aside>
-        </div>
-
-        <section className="mb-10">
-          <div className="flex items-center justify-between gap-4 mb-5">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-white/55 mb-2">
-                Local Providers
-              </p>
-              <h2 className="text-2xl md:text-3xl font-bold">
-                {activeService.name} Pros
-              </h2>
-            </div>
-
-            <span className="text-sm text-white/65">
-              {filteredPros.length} result{filteredPros.length === 1 ? "" : "s"}
             </span>
+
+            <span className="text-2xl text-white/90">☰</span>
+
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {filteredPros.length > 0 ? (
-              filteredPros.map((pro) => (
-                <div
-                  key={pro.name}
-                  className="bg-[#0f211b]/88 border border-[#234336] p-6 rounded-3xl backdrop-blur-sm"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="text-xl font-semibold">{pro.name}</h3>
-                      <p className="text-sm text-white/65 mt-1">{pro.service}</p>
-                    </div>
+        </div>
 
-                    <span className="text-xs px-3 py-2 rounded-full bg-[#173328] border border-[#2c5647] text-white/80">
-                      Verified
-                    </span>
-                  </div>
+      </header>
 
-                  <div className="mt-4 text-sm text-white/78">
-                    ⭐ {pro.rating} • {pro.jobs}
-                  </div>
+      <div className="mx-auto max-w-5xl px-5 pb-28 pt-9 md:px-8">
 
-                  <div className="text-sm text-white/65 mt-1">{pro.area}</div>
+        <section className="mb-7">
 
-                  <div className="mt-3 font-semibold text-lg">{pro.price}</div>
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-green-400">
 
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <button className="bg-[#214b3d] hover:bg-[#295745] px-4 py-2 rounded-xl transition font-medium">
-                      Request Quote
-                    </button>
-                    <button className="border border-[#325b4c] hover:bg-[#173328] px-4 py-2 rounded-xl transition">
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="md:col-span-2 bg-[#0f211b]/88 border border-[#234336] p-6 rounded-3xl text-white/72">
-                No matching pros found for this search yet.
-              </div>
-            )}
-          </div>
+            PNW Built
+
+          </p>
+
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+
+            Explore Local Services
+
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-base leading-7 text-white/72 sm:text-lg">
+
+            Book as a guest or create an account for member discounts and faster
+
+            repeat bookings.
+
+          </p>
+
         </section>
 
-        <div className="mt-10">
-          <Link href="/" className="text-[#8fd3b3] hover:text-white transition">
+        <section className="mb-9 rounded-3xl border border-white/10 bg-[#071a13]/85 p-5 backdrop-blur-xl md:p-6">
+
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
+            <div className="flex items-center gap-4">
+
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-green-400/20 bg-green-500/10 text-3xl">
+
+                🎁
+
+              </div>
+
+              <div>
+
+                <h2 className="text-lg font-bold">Join Relay today —</h2>
+
+                <p className="mt-1 max-w-sm leading-6 text-white/80">
+
+                  Save <strong className="text-green-400">$15</strong> on each
+
+                  of your first 3 services.
+
+                </p>
+
+                <p className="mt-1 text-sm text-white/50">
+
+                  Up to $45 in savings.
+
+                </p>
+
+              </div>
+
+            </div>
+
+            <Link
+
+              href="/signup"
+
+              className="rounded-2xl bg-gradient-to-b from-[#69ad79] to-[#33744c] px-6 py-4 text-center font-bold text-white transition hover:brightness-110"
+
+            >
+
+              Create Free Account
+
+            </Link>
+
+          </div>
+
+        </section>
+
+        <section>
+
+          <div className="mb-5">
+
+            <h2 className="text-2xl font-bold">Our Services</h2>
+
+            <p className="mt-1 text-white/65">
+
+              Choose a service to get started.
+
+            </p>
+
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+            {services.map((service) => {
+
+              const styles = getStatusClasses(service.status);
+
+              return (
+
+                <button
+
+                  key={service.name}
+
+                  type="button"
+
+                  onClick={() => chooseService(service)}
+
+                  className="overflow-hidden rounded-3xl border border-white/10 bg-[#071812]/90 text-left backdrop-blur-xl transition hover:border-green-400/30 hover:bg-[#0a2118]/95"
+
+                >
+
+                  <div className="relative h-36 overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#183629] via-[#10271d] to-[#081510]">
+
+                    <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-90">
+
+                      {service.icon}
+
+                    </div>
+
+                    <div className="absolute bottom-3 left-4 flex h-11 w-11 items-center justify-center rounded-full border border-green-400/25 bg-[#07130e]/90 text-xl">
+
+                      {service.icon}
+
+                    </div>
+
+                  </div>
+
+                  <div className="p-5">
+
+                    <h3 className="text-2xl font-bold">{service.name}</h3>
+
+                    <p className="mt-2 min-h-[72px] leading-6 text-white/70">
+
+                      {service.description}
+
+                    </p>
+
+                    <div className="mt-5">
+
+                      <div className="flex items-center gap-2">
+
+                        <span
+
+                          className={`h-3 w-3 rounded-full ${styles.dot}`}
+
+                        />
+
+                        <span
+
+                          className={`text-sm font-bold ${styles.text}`}
+
+                        >
+
+                          {service.statusText}
+
+                        </span>
+
+                      </div>
+
+                      <p className="ml-5 mt-1 text-sm text-white/55">
+
+                        {service.statusDetail}
+
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </button>
+
+              );
+
+            })}
+
+          </div>
+
+          <p className="mt-4 text-sm leading-6 text-white/50">
+
+            A service can still be requested when crews are not currently
+
+            active. We&apos;ll help schedule it for a later time.
+
+          </p>
+
+        </section>
+
+        <section className="mt-9 rounded-3xl border border-white/10 bg-[#071812]/90 p-6 backdrop-blur-xl">
+
+          <div className="flex items-start gap-4">
+
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-green-400/20 bg-green-500/10 text-3xl">
+
+              📍
+
+            </div>
+
+            <div>
+
+              <h2 className="text-xl font-bold">
+
+                We proudly serve these areas
+
+              </h2>
+
+              <p className="mt-2 leading-7 text-white/70">
+
+                North Everett, Marysville, Lake Stevens, Smokey Point, and
+
+                Mukilteo.
+
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+
+                {serviceAreas.map((area) => (
+
+                  <span
+
+                    key={area}
+
+                    className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white/80"
+
+                  >
+
+                    {area}
+
+                  </span>
+
+                ))}
+
+              </div>
+
+              <p className="mt-4 text-sm text-green-400">
+
+                View full service area →
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {selectedService && (
+
+          <section
+
+            id="request"
+
+            className="mt-10 scroll-mt-28 rounded-3xl border border-green-400/20 bg-[#06140f]/95 p-6 backdrop-blur-xl md:p-8"
+
+          >
+
+            <div className="mb-6 flex items-start justify-between gap-4">
+
+              <div>
+
+                <p className="text-sm font-bold uppercase tracking-[0.15em] text-green-400">
+
+                  Start Your Request
+
+                </p>
+
+                <h2 className="mt-2 text-3xl font-bold">
+
+                  {selectedService.icon} {selectedService.name}
+
+                </h2>
+
+                <p className="mt-2 text-white/60">
+
+                  No Relay account is required.
+
+                </p>
+
+              </div>
+
+              <button
+
+                type="button"
+
+                onClick={() => setSelectedService(null)}
+
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white/60"
+
+              >
+
+                ✕
+
+              </button>
+
+            </div>
+
+            <div className="mb-8 grid grid-cols-5 gap-2">
+
+              {["Location", "Details", "Photos", "Contact", "Review"].map(
+
+                (step, index) => (
+
+                  <div key={step} className="text-center">
+
+                    <div
+
+                      className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold ${
+
+                        index === 0
+
+                          ? "border-green-400 bg-green-500/25 text-green-300"
+
+                          : "border-white/15 bg-black/20 text-white/45"
+
+                      }`}
+
+                    >
+
+                      {index + 1}
+
+                    </div>
+
+                    <p className="mt-2 hidden text-xs text-white/50 sm:block">
+
+                      {step}
+
+                    </p>
+
+                  </div>
+
+                )
+
+              )}
+
+            </div>
+
+            <div className="space-y-5">
+
+              <div>
+
+                <label
+
+                  htmlFor="area"
+
+                  className="mb-2 block text-sm font-semibold"
+
+                >
+
+                  Where is the job located?
+
+                </label>
+
+                <select
+
+                  id="area"
+
+                  defaultValue=""
+
+                  className="w-full rounded-2xl border border-white/10 bg-[#0c2017] px-4 py-4 text-white outline-none"
+
+                >
+
+                  <option value="" disabled>
+
+                    Select your service area
+
+                  </option>
+
+                  {serviceAreas.map((area) => (
+
+                    <option key={area} value={area}>
+
+                      {area}
+
+                    </option>
+
+                  ))}
+
+                </select>
+
+              </div>
+
+              <div>
+
+                <label
+
+                  htmlFor="address"
+
+                  className="mb-2 block text-sm font-semibold"
+
+                >
+
+                  Service Address
+
+                </label>
+
+                <input
+
+                  id="address"
+
+                  type="text"
+
+                  placeholder="Enter your service address"
+
+                  className="w-full rounded-2xl border border-white/10 bg-[#0c2017] px-4 py-4 text-white placeholder:text-white/35 outline-none"
+
+                />
+
+              </div>
+
+              <div>
+
+                <label
+
+                  htmlFor="details"
+
+                  className="mb-2 block text-sm font-semibold"
+
+                >
+
+                  Tell us about the job
+
+                </label>
+
+                <textarea
+
+                  id="details"
+
+                  rows={4}
+
+                  placeholder={`What do you need help with for ${selectedService.name.toLowerCase()}?`}
+
+                  className="w-full resize-none rounded-2xl border border-white/10 bg-[#0c2017] px-4 py-4 text-white placeholder:text-white/35 outline-none"
+
+                />
+
+              </div>
+
+              <div>
+
+                <label
+
+                  htmlFor="photos"
+
+                  className="mb-2 block text-sm font-semibold"
+
+                >
+
+                  Add Photos
+
+                </label>
+
+                <input
+
+                  id="photos"
+
+                  type="file"
+
+                  accept="image/*"
+
+                  multiple
+
+                  className="w-full rounded-2xl border border-dashed border-white/15 bg-[#0c2017] px-4 py-5 text-sm text-white/60"
+
+                />
+
+                <p className="mt-2 text-xs text-white/45">
+
+                  Photos help us understand the job and provide a more accurate
+
+                  quote.
+
+                </p>
+
+              </div>
+
+              <div className="border-t border-white/10 pt-6">
+
+                <h3 className="text-xl font-bold">Contact Information</h3>
+
+                <p className="mt-1 text-sm text-white/60">
+
+                  Booking as a guest? Just enter your information so we can
+
+                  contact you.
+
+                </p>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+
+                  <div>
+
+                    <label
+
+                      htmlFor="name"
+
+                      className="mb-2 block text-sm font-semibold"
+
+                    >
+
+                      Full Name
+
+                    </label>
+
+                    <input
+
+                      id="name"
+
+                      type="text"
+
+                      placeholder="Your full name"
+
+                      className="w-full rounded-2xl border border-white/10 bg-[#0c2017] px-4 py-4 text-white placeholder:text-white/35 outline-none"
+
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label
+
+                      htmlFor="phone"
+
+                      className="mb-2 block text-sm font-semibold"
+
+                    >
+
+                      Phone Number
+
+                    </label>
+
+                    <input
+
+                      id="phone"
+
+                      type="tel"
+
+                      placeholder="(425) 555-0123"
+
+                      className="w-full rounded-2xl border border-white/10 bg-[#0c2017] px-4 py-4 text-white placeholder:text-white/35 outline-none"
+
+                    />
+
+                  </div>
+
+                  <div className="sm:col-span-2">
+
+                    <label
+
+                      htmlFor="email"
+
+                      className="mb-2 block text-sm font-semibold"
+
+                    >
+
+                      Email Address
+
+                    </label>
+
+                    <input
+
+                      id="email"
+
+                      type="email"
+
+                      placeholder="you@example.com"
+
+                      className="w-full rounded-2xl border border-white/10 bg-[#0c2017] px-4 py-4 text-white placeholder:text-white/35 outline-none"
+
+                    />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div className="rounded-2xl border border-green-400/20 bg-green-500/5 p-5">
+
+                <div className="flex gap-3">
+
+                  <span className="text-2xl">🎁</span>
+
+                  <div>
+
+                    <h3 className="font-bold text-green-300">
+
+                      Create your account and save
+
+                    </h3>
+
+                    <p className="mt-1 text-sm leading-6 text-white/70">
+
+                      Get <strong>$15 off this service</strong> and $15 off each
+
+                      of your next 2 services.
+
+                    </p>
+
+                    <p className="mt-1 text-sm font-bold text-amber-300">
+
+                      That&apos;s up to $45 in savings.
+
+                    </p>
+
+                    <Link
+
+                      href="/signup"
+
+                      className="mt-4 inline-flex rounded-xl border border-green-400/30 bg-green-500/10 px-4 py-2 text-sm font-bold text-green-300 transition hover:bg-green-500/20"
+
+                    >
+
+                      Create My Account
+
+                    </Link>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <button
+
+                type="button"
+
+                className="w-full rounded-2xl bg-gradient-to-b from-[#69ad79] to-[#33744c] px-6 py-4 text-lg font-bold text-white transition hover:brightness-110"
+
+              >
+
+                Continue & Get Quote
+
+              </button>
+
+              <p className="text-center text-xs text-white/40">
+
+                You do not need an account to request a service.
+
+              </p>
+
+            </div>
+
+          </section>
+
+        )}
+
+        <section className="mt-10 rounded-3xl border border-white/10 bg-[#071812]/90 p-6 backdrop-blur-xl">
+
+          <h2 className="text-center text-2xl font-bold">How Relay Works</h2>
+
+          <div className="mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+
+            <div className="text-center">
+
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 font-bold text-green-300">
+
+                1
+
+              </div>
+
+              <h3 className="mt-3 font-bold">Choose a Service</h3>
+
+              <p className="mt-2 text-sm leading-6 text-white/60">
+
+                Pick the service you need help with.
+
+              </p>
+
+            </div>
+
+            <div className="text-center">
+
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 font-bold text-green-300">
+
+                2
+
+              </div>
+
+              <h3 className="mt-3 font-bold">Tell Us the Details</h3>
+
+              <p className="mt-2 text-sm leading-6 text-white/60">
+
+                Add your location, details, and photos.
+
+              </p>
+
+            </div>
+
+            <div className="text-center">
+
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 font-bold text-green-300">
+
+                3
+
+              </div>
+
+              <h3 className="mt-3 font-bold">Get a Quote</h3>
+
+              <p className="mt-2 text-sm leading-6 text-white/60">
+
+                We&apos;ll review your request and provide pricing.
+
+              </p>
+
+            </div>
+
+            <div className="text-center">
+
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-green-400/25 bg-green-500/10 font-bold text-green-300">
+
+                4
+
+              </div>
+
+              <h3 className="mt-3 font-bold">We Get It Done</h3>
+
+              <p className="mt-2 text-sm leading-6 text-white/60">
+
+                Your crew arrives and handles the job.
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <section
+
+          id="about"
+
+          className="mt-10 rounded-3xl border border-white/10 bg-[#071812]/90 p-6 backdrop-blur-xl md:p-8"
+
+        >
+
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-green-400">
+
+            About Relay
+
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold text-green-300">
+
+            Built for our community.
+
+            <br />
+
+            Here to help.
+
+          </h2>
+
+          <p className="mt-4 max-w-2xl leading-7 text-white/70">
+
+            Relay is a local service platform built in Everett, Washington. We
+
+            make it simple to get reliable local help for jobs that need a truck,
+
+            hauling, moving, cleanup, or delivery.
+
+          </p>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+
+            <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+
+              <h3 className="font-bold">📍 Local & Reliable</h3>
+
+              <p className="mt-1 text-sm text-white/60">
+
+                We live and work in the communities we serve.
+
+              </p>
+
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+
+              <h3 className="font-bold">💵 Transparent Pricing</h3>
+
+              <p className="mt-1 text-sm text-white/60">
+
+                Clear quotes before the work begins.
+
+              </p>
+
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+
+              <h3 className="font-bold">⏱️ On-Time Crews</h3>
+
+              <p className="mt-1 text-sm text-white/60">
+
+                We show up and get the job handled.
+
+              </p>
+
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+
+              <h3 className="font-bold">🌲 PNW Built</h3>
+
+              <p className="mt-1 text-sm text-white/60">
+
+                Built locally in Everett, Washington.
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <div className="mt-8 text-center">
+
+          <Link
+
+            href="/"
+
+            className="text-sm font-semibold text-green-400 hover:text-white"
+
+          >
+
             ← Back Home
+
           </Link>
+
         </div>
+
       </div>
+
+      <nav className="sticky bottom-0 z-40 border-t border-white/10 bg-[#06100c]/95 backdrop-blur-xl">
+
+        <div className="mx-auto grid max-w-5xl grid-cols-4 px-3 py-3 text-center text-xs">
+
+          <Link href="/" className="py-2 text-white/60">
+
+            <div className="text-xl">⌂</div>
+
+            <div className="mt-1">Home</div>
+
+          </Link>
+
+          <div className="py-2 text-green-400">
+
+            <div className="text-xl">⌕</div>
+
+            <div className="mt-1">Explore</div>
+
+          </div>
+
+          <a href="#about" className="py-2 text-white/60">
+
+            <div className="text-xl">ⓘ</div>
+
+            <div className="mt-1">About</div>
+
+          </a>
+
+          <Link href="/account" className="py-2 text-white/40">
+
+            <div className="text-xl">♙</div>
+
+            <div className="mt-1">Account</div>
+
+          </Link>
+
+        </div>
+
+      </nav>
+
     </main>
+
   );
+
 }
