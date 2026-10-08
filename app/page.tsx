@@ -5,7 +5,7 @@ export default function Home() {
     <main
       className="relative min-h-screen overflow-hidden text-white"
       style={{
-        backgroundImage: "url('/IMG_7024.jpeg')",
+        backgroundImage: "url('/14B0E211-C0EC-4D58-9BA9-ED0220396C08.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
